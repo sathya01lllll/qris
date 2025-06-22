@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pembayaran QRIS Interaktif</title>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #27ae60;
+            --dark-color: #2c3e50;
+            --light-color: #f5f7fa;
+            --text-color: #333;
+            --border-radius: 15px;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--light-color) 0%, #c3cfe2 100%);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: var(--text-color);
+        }
+
+        .container {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+        }
+
+        .container:hover {
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+            transform: translateY(-5px);
+        }
+
+        h1 {
+            color: var(--dark-color);
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .qris-container {
+            margin: 20px 0;
+            position: relative;
+            overflow: hidden;
+            border-radius: 10px;
+            border: 1px solid #eee;
+            cursor: zoom-in;
+            transition: all 0.3s ease;
+            padding: 15px;
+            background-color: #f9f9f9;
+        }
+
+        .qris-container.zoomed {
+            cursor: zoom-out;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1000;
+            background-color: rgba(0, 0, 0, 0.95);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 0;
+            padding: 0;
+            margin: 0;
+        }
+
+        .qris-container.zoomed img {
+            max-width: 90%;
+            max-height: 90%;
+            width: auto;
+            height: auto;
+            transform: scale(1.1);
+        }
+
+        img {
+            width: 100%;
+            height: auto;
+            transition: transform 0.3s ease;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .instructions {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            text-align: left;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .instructions h3 {
+            margin-top: 0;
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .instructions ol {
+            padding-left: 20px;
+            margin-bottom: 0;
+        }
+
+        .instructions li {
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+        }
+
+        .btn-download {
+            background-color: var(--secondary-color);
+        }
+
+        .btn-download:hover {
+            background-color: #219653;
+        }
+
+        footer {
+            margin-top: 30px;
+            font-size: 12px;
+            color: #7f8c8d;
+            border-top: 1px solid #eee;
+            padding-top: 15px;
+        }
+
+        .badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: var(--secondary-color);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .btn-group {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="badge">QRIS</div>
+        <h1>Pembayaran QRIS</h1>
+        <p>Scan QR code berikut untuk melakukan pembayaran</p>
+        
+        <div class="qris-container" id="qrisContainer">
+            <!-- Ganti dengan path gambar QRIS Anda -->
+            <img src="qris.png" alt="QRIS Code" id="qrisImage">
+        </div>
+        
+        <div class="btn-group">
+            <button class="btn" id="zoomBtn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    <line x1="11" y1="8" x2="11" y2="14"></line>
+                    <line x1="8" y1="11" x2="14" y2="11"></line>
+                </svg>
+                Zoom
+            </button>
+            <button class="btn btn-download" id="downloadBtn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                Download
+            </button>
+        </div>
+        
+        <div class="instructions">
+            <h3>Cara Pembayaran:</h3>
+            <ol>
+                <li>Buka aplikasi mobile banking atau e-wallet Anda</li>
+                <li>Pilih menu pembayaran QRIS/QR Code</li>
+                <li>Arahkan kamera ke QR code di atas</li>
+                <li>Konfirmasi nominal dan detail pembayaran</li>
+                <li>Verifikasi dan selesaikan pembayaran</li>
+            </ol>
+        </div>
+        
+        <footer>Transaksi aman dan terjamin | ⓒⓢ ᴘᴏᴡᴇʀᴇᴅ ʙʏ ꜱᴀᴛʜʏᴀ ꜱᴛᴏʀᴇ</footer>
+    </div>
+
+    <script>
+        const qrisContainer = document.getElementById('qrisContainer');
+        const qrisImage = document.getElementById('qrisImage');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const zoomBtn = document.getElementById('zoomBtn');
+        
+        // Zoom functionality
+        function toggleZoom() {
+            qrisContainer.classList.toggle('zoomed');
+            
+            if (qrisContainer.classList.contains('zoomed')) {
+                document.body.style.overflow = 'hidden';
+                zoomBtn.innerHTML = `
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        <line x1="8" y1="11" x2="14" y2="11"></line>
+                    </svg>
+                    Kecilkan
+                `;
+            } else {
+                document.body.style.overflow = '';
+                zoomBtn.innerHTML = `
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        <line x1="11" y1="8" x2="11" y2="14"></line>
+                        <line x1="8" y1="11" x2="14" y2="11"></line>
+                    </svg>
+                    Zoom
+                `;
+            }
+        }
+        
+        qrisContainer.addEventListener('click', toggleZoom);
+        zoomBtn.addEventListener('click', toggleZoom);
+        
+        // Download functionality
+        downloadBtn.addEventListener('click', function() {
+            const link = document.createElement('a');
+            link.href = qrisImage.src;
+            link.download = 'qris-payment.png';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+        
+        // Prevent zoom when clicking on buttons
+        downloadBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+        
+        zoomBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+    </script>
+</body>
+</html>
