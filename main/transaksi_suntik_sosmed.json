@@ -1,1 +1,9 @@
-{}
+{
+  "c64acb0b-2c2c-428e-ad19-2051911d265f": {
+    "chatId": 8183573087,
+    "type": "deposit",
+    "amount": 2000,
+    "status": "pending",
+    "createdAt": "2025-07-12T09:59:31.811Z"
+  }
+}
